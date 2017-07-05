@@ -75,7 +75,7 @@ static CGFloat itemMargin = 5;
     _isSelectOriginalPhoto = tzImagePickerVc.isSelectOriginalPhoto;
     _shouldScrollToBottom = YES;
     self.view.backgroundColor = [UIColor whiteColor];
-    self.navigationItem.title = _model.name;
+    self.navigationItem.title = @"Select Images";
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:tzImagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:tzImagePickerVc action:@selector(cancelButtonClick)];
     if (tzImagePickerVc.navLeftBarButtonSettingBlock) {
         UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -198,6 +198,7 @@ static CGFloat itemMargin = 5;
     [_previewButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [_previewButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
     _previewButton.enabled = tzImagePickerVc.selectedModels.count;
+    _previewButton.hidden = YES;
     
     if (tzImagePickerVc.allowPickingOriginalPhoto) {
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -221,16 +222,20 @@ static CGFloat itemMargin = 5;
     }
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
+    _doneButton.frame = CGRectMake(self.view.tz_width - 44 - 12, 3, 44, 44);
+    _doneButton.titleLabel.font = [UIFont fontWithName:@"Rubik-Medium" size:14];
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:tzImagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     [_doneButton setTitle:tzImagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
     [_doneButton setTitleColor:tzImagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
     [_doneButton setTitleColor:tzImagePickerVc.oKButtonTitleColorDisabled forState:UIControlStateDisabled];
     _doneButton.enabled = tzImagePickerVc.selectedModels.count || tzImagePickerVc.alwaysEnableDoneBtn;
+    [_doneButton sizeToFit];
+     _doneButton.frame = CGRectMake(self.view.tz_width - _doneButton.frame.size.width - 12, 3, _doneButton.frame.size.width, 44);
     
     _numberImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamedFromMyBundle:tzImagePickerVc.photoNumberIconImageName]];
-    _numberImageView.hidden = tzImagePickerVc.selectedModels.count <= 0;
+    _numberImageView.frame = CGRectMake(self.view.tz_width - 56 - 28, 10, 30, 30);
+    _numberImageView.hidden = YES;
     _numberImageView.backgroundColor = [UIColor clearColor];
     
     _numberLabel = [[UILabel alloc] init];
@@ -238,7 +243,7 @@ static CGFloat itemMargin = 5;
     _numberLabel.textColor = [UIColor whiteColor];
     _numberLabel.textAlignment = NSTextAlignmentCenter;
     _numberLabel.text = [NSString stringWithFormat:@"%zd",tzImagePickerVc.selectedModels.count];
-    _numberLabel.hidden = tzImagePickerVc.selectedModels.count <= 0;
+    _numberLabel.hidden = YES;
     _numberLabel.backgroundColor = [UIColor clearColor];
     
     _divideLine = [[UIView alloc] init];
@@ -596,13 +601,13 @@ static CGFloat itemMargin = 5;
     _previewButton.enabled = tzImagePickerVc.selectedModels.count > 0;
     _doneButton.enabled = tzImagePickerVc.selectedModels.count > 0 || tzImagePickerVc.alwaysEnableDoneBtn;
     
-    _numberImageView.hidden = tzImagePickerVc.selectedModels.count <= 0;
-    _numberLabel.hidden = tzImagePickerVc.selectedModels.count <= 0;
+    _numberImageView.hidden = YES;
+    _numberLabel.hidden = YES;
     _numberLabel.text = [NSString stringWithFormat:@"%zd",tzImagePickerVc.selectedModels.count];
     
     _originalPhotoButton.enabled = tzImagePickerVc.selectedModels.count > 0;
     _originalPhotoButton.selected = (_isSelectOriginalPhoto && _originalPhotoButton.enabled);
-    _originalPhotoLabel.hidden = (!_originalPhotoButton.isSelected);
+    _originalPhotoLabel.hidden = YES;
     if (_isSelectOriginalPhoto) [self getSelectedPhotoBytes];
 }
 
