@@ -574,7 +574,15 @@
     self.view.backgroundColor = [UIColor whiteColor];
     
     TZImagePickerController *imagePickerVc = (TZImagePickerController *)self.navigationController;
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+    
+    if (imagePickerVc.navRigthBarButtonSettingBlock) {
+        UIButton *rigthButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        rigthButton.frame = CGRectMake(0, 0, 44, 44);
+        imagePickerVc.navRigthBarButtonSettingBlock(rigthButton);
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:rigthButton];
+    } else {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {

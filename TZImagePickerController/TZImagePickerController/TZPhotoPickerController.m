@@ -26,6 +26,7 @@
     UIImageView *_numberImageView;
     UILabel *_numberLabel;
     UIButton *_originalPhotoButton;
+    UIButton *_changeAlbumButton;
     UILabel *_originalPhotoLabel;
     UIView *_divideLine;
     
@@ -75,7 +76,7 @@ static CGFloat itemMargin = 5;
     _isSelectOriginalPhoto = tzImagePickerVc.isSelectOriginalPhoto;
     _shouldScrollToBottom = YES;
     self.view.backgroundColor = [UIColor whiteColor];
-    self.navigationItem.title = @"Select Images";
+    self.navigationItem.title = tzImagePickerVc.useTBStyle ? @"" : _model.name;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:tzImagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:tzImagePickerVc action:@selector(cancelButtonClick)];
     if (tzImagePickerVc.navLeftBarButtonSettingBlock) {
         UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -83,7 +84,34 @@ static CGFloat itemMargin = 5;
         [leftButton addTarget:self action:@selector(navLeftBarButtonClick) forControlEvents:UIControlEventTouchUpInside];
         tzImagePickerVc.navLeftBarButtonSettingBlock(leftButton);
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:leftButton];
+        if (tzImagePickerVc.useTBStyle) {
+             leftButton.enabled = NO;
+        }
     }
+    
+    if (tzImagePickerVc.navRigthBarButtonSettingBlock) {
+        UIButton *rigthButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        rigthButton.frame = CGRectMake(0, 0, 44, 44);
+        tzImagePickerVc.navRigthBarButtonSettingBlock(rigthButton);
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:rigthButton];
+    }
+    
+    
+    if (tzImagePickerVc.useTBStyle) {
+        _changeAlbumButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        _changeAlbumButton.titleLabel.font = [UIFont fontWithName:@"Rubik-Regular" size:16];
+        [_changeAlbumButton addTarget:self action:@selector(navLeftBarButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        [_changeAlbumButton setTitle:[NSString stringWithFormat:@"%@ ▾", _model.name] forState:UIControlStateNormal];
+        [_changeAlbumButton setTitleColor: [UIColor colorWithRed:27.0f / 255.0f green:55.0f / 255.0f blue:140.0f / 255.0f alpha:1.0f] forState:UIControlStateNormal];
+        if (tzImagePickerVc.albumButtonSettingBlock) {
+            tzImagePickerVc.albumButtonSettingBlock(_changeAlbumButton);
+        }
+        [_changeAlbumButton sizeToFit];
+        [self.view addSubview:_changeAlbumButton];
+        _changeAlbumButton.center = self.view.center;
+    }
+
+    
     _showTakePhotoBtn = (_model.isCameraRoll && tzImagePickerVc.allowTakePicture);
     // [self resetCachedAssets];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didChangeStatusBarOrientationNotification:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
@@ -200,7 +228,7 @@ static CGFloat itemMargin = 5;
     _previewButton.enabled = tzImagePickerVc.selectedModels.count;
     _previewButton.hidden = YES;
     
-    if (tzImagePickerVc.allowPickingOriginalPhoto) {
+    if (/* DISABLES CODE */ (NO)) {
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
@@ -274,10 +302,14 @@ static CGFloat itemMargin = 5;
     if (self.navigationController.navigationBar.isTranslucent) {
         top = naviBarHeight;
         if (iOS7Later && !isStatusBarHidden) top += 20;
+        top += tzImagePickerVc.useTBStyle ? 53 : 0;
         collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 - top : self.view.tz_height - top;;
     } else {
+        top += tzImagePickerVc.useTBStyle ? 53 : 0;
         collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 : self.view.tz_height;
     }
+    _changeAlbumButton.frame = CGRectMake(_changeAlbumButton.frame.origin.x, top - 53 + 16 , _changeAlbumButton.frame.size.width, _changeAlbumButton.frame.size.height);
+
     _collectionView.frame = CGRectMake(0, top, self.view.tz_width, collectionViewHeight);
     CGFloat itemWH = (self.view.tz_width - (self.columnNumber + 1) * itemMargin) / self.columnNumber;
     _layout.itemSize = CGSizeMake(itemWH, itemWH);
@@ -309,7 +341,8 @@ static CGFloat itemMargin = 5;
         _originalPhotoButton.frame = CGRectMake(CGRectGetMaxX(_previewButton.frame), self.view.tz_height - 50, fullImageWidth + 56, 50);
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, 50);
     }
-    _doneButton.frame = CGRectMake(self.view.tz_width - 44 - 12, 3, 44, 44);
+    [_doneButton sizeToFit];
+    _doneButton.frame = CGRectMake(self.view.tz_width - _doneButton.frame.size.width - 12, 3, _doneButton.frame.size.width, 44);
     _numberImageView.frame = CGRectMake(self.view.tz_width - 56 - 28, 10, 30, 30);
     _numberLabel.frame = _numberImageView.frame;
     _divideLine.frame = CGRectMake(0, 0, self.view.tz_width, 1);
@@ -326,7 +359,18 @@ static CGFloat itemMargin = 5;
 
 #pragma mark - Click Event
 - (void)navLeftBarButtonClick{
-    [self.navigationController popViewControllerAnimated:YES];
+    TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
+    if (tzImagePickerVc.useTBStyle) {
+        CATransition *transition = [CATransition animation];
+        transition.duration = 0.5;
+        transition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+        transition.type = kCATransitionMoveIn;
+        transition.subtype = kCATransitionFromTop;
+        [self.navigationController.view.layer addAnimation:transition forKey:kCATransition];
+        [self.navigationController popViewControllerAnimated:NO];
+    } else {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
 }
 - (void)previewButtonClick {
     TZPhotoPreviewController *photoPreviewVc = [[TZPhotoPreviewController alloc] init];
@@ -612,21 +656,31 @@ static CGFloat itemMargin = 5;
 }
 
 - (void)pushPhotoPrevireViewController:(TZPhotoPreviewController *)photoPreviewVc {
-    __weak typeof(self) weakSelf = self;
-    photoPreviewVc.isSelectOriginalPhoto = _isSelectOriginalPhoto;
-    [photoPreviewVc setBackButtonClickBlock:^(BOOL isSelectOriginalPhoto) {
-        weakSelf.isSelectOriginalPhoto = isSelectOriginalPhoto;
-        [weakSelf.collectionView reloadData];
-        [weakSelf refreshBottomToolBarStatus];
-    }];
-    [photoPreviewVc setDoneButtonClickBlock:^(BOOL isSelectOriginalPhoto) {
-        weakSelf.isSelectOriginalPhoto = isSelectOriginalPhoto;
-        [weakSelf doneButtonClick];
-    }];
-    [photoPreviewVc setDoneButtonClickBlockCropMode:^(UIImage *cropedImage, id asset) {
-        [weakSelf didGetAllPhotos:@[cropedImage] assets:@[asset] infoArr:nil];
-    }];
-    [self.navigationController pushViewController:photoPreviewVc animated:YES];
+    TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
+
+    if (tzImagePickerVc.allowPreview) {
+        __weak typeof(self) weakSelf = self;
+        photoPreviewVc.isSelectOriginalPhoto = _isSelectOriginalPhoto;
+        [photoPreviewVc setBackButtonClickBlock:^(BOOL isSelectOriginalPhoto) {
+            weakSelf.isSelectOriginalPhoto = isSelectOriginalPhoto;
+            [weakSelf.collectionView reloadData];
+            [weakSelf refreshBottomToolBarStatus];
+        }];
+        [photoPreviewVc setDoneButtonClickBlock:^(BOOL isSelectOriginalPhoto) {
+            weakSelf.isSelectOriginalPhoto = isSelectOriginalPhoto;
+            [weakSelf doneButtonClick];
+        }];
+        [photoPreviewVc setDoneButtonClickBlockCropMode:^(UIImage *cropedImage, id asset) {
+            [weakSelf didGetAllPhotos:@[cropedImage] assets:@[asset] infoArr:nil];
+        }];
+        [self.navigationController pushViewController:photoPreviewVc animated:YES];
+    } else {
+        if (tzImagePickerVc.selectedModels.count == 0 && tzImagePickerVc.minImagesCount <= 0) {
+            TZAssetModel *model = photoPreviewVc.models[photoPreviewVc.currentIndex];
+            [tzImagePickerVc.selectedModels addObject:model];
+        }
+        [self doneButtonClick];
+    }
 }
 
 - (void)getSelectedPhotoBytes {

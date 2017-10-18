@@ -49,6 +49,7 @@
 /// Always enale the done button, not require minimum 1 photo be picked
 /// 让完成按钮一直可以点击，无须最少选择一张图片
 @property (nonatomic, assign) BOOL alwaysEnableDoneBtn;
+@property (nonatomic, assign) BOOL useTBStyle;
 
 /// Sort photos ascending by modificationDate，Default is YES
 /// 对照片排序，按修改时间升序，默认是YES。如果设置为NO,最新的照片会显示在最前面，内部的拍照按钮会排在第一个
@@ -119,8 +120,9 @@
 @property (nonatomic, assign) NSInteger circleCropRadius;  ///< 圆形裁剪框半径大小
 @property (nonatomic, copy) void (^cropViewSettingBlock)(UIView *cropView);     ///< 自定义裁剪框的其他属性
 
-@property (nonatomic, copy) void (^navLeftBarButtonSettingBlock)(UIButton *leftButton);     ///< 自定义返回按钮样式及其属性
-
+@property (nonatomic, copy) void (^navLeftBarButtonSettingBlock)(UIButton *leftButton);
+@property (nonatomic, copy) void (^navRigthBarButtonSettingBlock)(UIButton *rightButton);
+@property (nonatomic, copy) void (^albumButtonSettingBlock)(UIButton *leftButton);
 - (id)showAlertWithTitle:(NSString *)title;
 - (void)hideAlertView:(id)alertView;
 - (void)showProgressHUD;
