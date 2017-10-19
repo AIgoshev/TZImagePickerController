@@ -41,10 +41,11 @@
 @property (strong, nonatomic) UICollectionViewFlowLayout *layout;
 @property (nonatomic, strong) UIImagePickerController *imagePickerVc;
 @property (strong, nonatomic) CLLocation *location;
+@property (strong, nonatomic) UIButton *tbCameraButton;
 @end
 
 static CGSize AssetGridThumbnailSize;
-static CGFloat itemMargin = 5;
+static CGFloat itemMargin = 4;
 
 @implementation TZPhotoPickerController
 
@@ -109,10 +110,19 @@ static CGFloat itemMargin = 5;
         [_changeAlbumButton sizeToFit];
         [self.view addSubview:_changeAlbumButton];
         _changeAlbumButton.center = self.view.center;
+        if (_model.isCameraRoll && tzImagePickerVc.allowTakePicture) {
+            UIButton* cameraButton = [UIButton buttonWithType:UIButtonTypeCustom];
+            [cameraButton addTarget:self action:@selector(takePhoto) forControlEvents:UIControlEventTouchUpInside];
+            [cameraButton setImage:[UIImage imageNamed:@"camera_icon_small"] forState:UIControlStateNormal];
+            [cameraButton sizeToFit];
+            _tbCameraButton = cameraButton;
+            [self.view addSubview:_tbCameraButton];
+        }
+        
     }
 
     
-    _showTakePhotoBtn = (_model.isCameraRoll && tzImagePickerVc.allowTakePicture);
+    _showTakePhotoBtn = (_model.isCameraRoll && tzImagePickerVc.allowTakePicture && !tzImagePickerVc.useTBStyle);
     // [self resetCachedAssets];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didChangeStatusBarOrientationNotification:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 }
@@ -309,6 +319,8 @@ static CGFloat itemMargin = 5;
         collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 : self.view.tz_height;
     }
     _changeAlbumButton.frame = CGRectMake(_changeAlbumButton.frame.origin.x, top - 53 + 16 , _changeAlbumButton.frame.size.width, _changeAlbumButton.frame.size.height);
+    _tbCameraButton.center = _changeAlbumButton.center;
+    _tbCameraButton.frame = CGRectMake(self.view.bounds.size.width - _tbCameraButton.bounds.size.width - 16, _tbCameraButton.frame.origin.y, _tbCameraButton.bounds.size.width, _tbCameraButton.bounds.size.height);
 
     _collectionView.frame = CGRectMake(0, top, self.view.tz_width, collectionViewHeight);
     CGFloat itemWH = (self.view.tz_width - (self.columnNumber + 1) * itemMargin) / self.columnNumber;
@@ -362,7 +374,7 @@ static CGFloat itemMargin = 5;
     TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
     if (tzImagePickerVc.useTBStyle) {
         CATransition *transition = [CATransition animation];
-        transition.duration = 0.5;
+        transition.duration = 0.3;
         transition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
         transition.type = kCATransitionMoveIn;
         transition.subtype = kCATransitionFromTop;

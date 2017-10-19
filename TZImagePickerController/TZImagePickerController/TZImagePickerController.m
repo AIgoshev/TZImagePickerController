@@ -32,6 +32,7 @@
 /// Default is 4, Use in photos collectionView in TZPhotoPickerController
 /// 默认4列, TZPhotoPickerController中的照片collectionView
 @property (nonatomic, assign) NSInteger columnNumber;
+@property (nonatomic, strong) TZAlbumModel* previousModel;
 @end
 
 @implementation TZImagePickerController
@@ -42,7 +43,7 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     self.navigationBar.barStyle = UIBarStyleBlack;
-    self.navigationBar.translucent = YES;
+    self.navigationBar.translucent = NO;
     [TZImageManager manager].shouldFixOrientation = NO;
 
     // Default appearance, you can reset these after this method
@@ -286,6 +287,7 @@
         photoPickerVc.columnNumber = self.columnNumber;
         [[TZImageManager manager] getCameraRollAlbum:self.allowPickingVideo allowPickingImage:self.allowPickingImage completion:^(TZAlbumModel *model) {
             photoPickerVc.model = model;
+            self.previousModel = model;
             [self pushViewController:photoPickerVc animated:YES];
             _didPushPhotoPickerVc = YES;
         }];
@@ -575,14 +577,34 @@
     
     TZImagePickerController *imagePickerVc = (TZImagePickerController *)self.navigationController;
     
-    if (imagePickerVc.navRigthBarButtonSettingBlock) {
+    if (imagePickerVc.useTBStyle) {
         UIButton *rigthButton = [UIButton buttonWithType:UIButtonTypeCustom];
         rigthButton.frame = CGRectMake(0, 0, 44, 44);
-        imagePickerVc.navRigthBarButtonSettingBlock(rigthButton);
+        [rigthButton addTarget:self action:@selector(dismissAlbumPicker:) forControlEvents:UIControlEventTouchUpInside];
+        [rigthButton setImage:[UIImage imageNamed:@"close_white"] forState:UIControlStateNormal];
+        [rigthButton sizeToFit];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:rigthButton];
     } else {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
     }
+}
+
+- (void)dismissAlbumPicker:(__unused UIButton*)sender
+{
+    TZPhotoPickerController *photoPickerVc = [[TZPhotoPickerController alloc] init];
+    photoPickerVc.columnNumber = self.columnNumber;
+    TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
+    if (tzImagePickerVc.previousModel == nil) {
+        return;
+    }
+    photoPickerVc.model = tzImagePickerVc.previousModel;
+    CATransition *transition = [CATransition animation];
+    transition.duration = 0.3;
+    transition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    transition.type = kCATransitionReveal;
+    transition.subtype = kCATransitionFromBottom;
+    [self.navigationController.view.layer addAnimation:transition forKey:kCATransition];
+    [self.navigationController pushViewController:photoPickerVc animated:NO];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -672,7 +694,22 @@
     photoPickerVc.columnNumber = self.columnNumber;
     TZAlbumModel *model = _albumArr[indexPath.row];
     photoPickerVc.model = model;
-    [self.navigationController pushViewController:photoPickerVc animated:YES];
+    
+    TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
+    if (tzImagePickerVc.useTBStyle) {
+        tzImagePickerVc.previousModel = model;
+        CATransition *transition = [CATransition animation];
+        transition.duration = 0.3;
+        transition.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+        transition.type = kCATransitionReveal;
+        transition.subtype = kCATransitionFromBottom;
+        [self.navigationController.view.layer addAnimation:transition forKey:kCATransition];
+        [self.navigationController pushViewController:photoPickerVc animated:NO];
+    } else {
+        [self.navigationController pushViewController:photoPickerVc animated:YES];
+    }
+    
+   
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
 
