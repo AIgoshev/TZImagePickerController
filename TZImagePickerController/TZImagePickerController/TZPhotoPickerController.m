@@ -100,10 +100,19 @@ static CGFloat itemMargin = 4;
     
     if (tzImagePickerVc.useTBStyle) {
         _changeAlbumButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _changeAlbumButton.titleLabel.font = [UIFont fontWithName:@"Rubik-Regular" size:16];
         [_changeAlbumButton addTarget:self action:@selector(navLeftBarButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        [_changeAlbumButton setTitle:[NSString stringWithFormat:@"%@ ▾", _model.name] forState:UIControlStateNormal];
-        [_changeAlbumButton setTitleColor: [UIColor colorWithRed:27.0f / 255.0f green:55.0f / 255.0f blue:140.0f / 255.0f alpha:1.0f] forState:UIControlStateNormal];
+        
+        NSMutableAttributedString *mutableAttrStr = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@ ", _model.name]  attributes:@{NSFontAttributeName : [UIFont fontWithName:@"Rubik-Regular" size:16], NSForegroundColorAttributeName :  [UIColor colorWithRed:27.0f / 255.0f green:55.0f / 255.0f blue:140.0f / 255.0f alpha:1.0f]}];
+        
+        NSTextAttachment *textAttachment = [[NSTextAttachment alloc] init];
+        UIImage* iconImage = [UIImage imageNamed:@"triangle_cobolt"];
+        textAttachment.image = iconImage;
+        textAttachment.bounds = CGRectMake(0.0f, 0.0f, iconImage.size.width, iconImage.size.height);
+        
+        NSAttributedString *attrStringWithImage = [NSAttributedString attributedStringWithAttachment:textAttachment];
+        [mutableAttrStr appendAttributedString:attrStringWithImage];
+
+        [_changeAlbumButton setAttributedTitle:mutableAttrStr forState:UIControlStateNormal];
         if (tzImagePickerVc.albumButtonSettingBlock) {
             tzImagePickerVc.albumButtonSettingBlock(_changeAlbumButton);
         }
@@ -114,7 +123,7 @@ static CGFloat itemMargin = 4;
             UIButton* cameraButton = [UIButton buttonWithType:UIButtonTypeCustom];
             [cameraButton addTarget:self action:@selector(takePhoto) forControlEvents:UIControlEventTouchUpInside];
             [cameraButton setImage:[UIImage imageNamed:@"camera_icon_small"] forState:UIControlStateNormal];
-            [cameraButton sizeToFit];
+            cameraButton.frame = CGRectMake(0, 0, 60, 50);
             _tbCameraButton = cameraButton;
             [self.view addSubview:_tbCameraButton];
         }
@@ -313,14 +322,14 @@ static CGFloat itemMargin = 4;
         top = naviBarHeight;
         if (iOS7Later && !isStatusBarHidden) top += 20;
         top += tzImagePickerVc.useTBStyle ? 53 : 0;
-        collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 - top : self.view.tz_height - top;;
+        collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 - top : self.view.tz_height - top;
     } else {
         top += tzImagePickerVc.useTBStyle ? 53 : 0;
-        collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 : self.view.tz_height;
+        collectionViewHeight = tzImagePickerVc.showSelectBtn ? self.view.tz_height - 50 - top : self.view.tz_height;
     }
     _changeAlbumButton.frame = CGRectMake(_changeAlbumButton.frame.origin.x, top - 53 + 16 , _changeAlbumButton.frame.size.width, _changeAlbumButton.frame.size.height);
     _tbCameraButton.center = _changeAlbumButton.center;
-    _tbCameraButton.frame = CGRectMake(self.view.bounds.size.width - _tbCameraButton.bounds.size.width - 16, _tbCameraButton.frame.origin.y, _tbCameraButton.bounds.size.width, _tbCameraButton.bounds.size.height);
+    _tbCameraButton.frame = CGRectMake(self.view.bounds.size.width - _tbCameraButton.bounds.size.width, _tbCameraButton.frame.origin.y, _tbCameraButton.bounds.size.width, _tbCameraButton.bounds.size.height);
 
     _collectionView.frame = CGRectMake(0, top, self.view.tz_width, collectionViewHeight);
     CGFloat itemWH = (self.view.tz_width - (self.columnNumber + 1) * itemMargin) / self.columnNumber;
