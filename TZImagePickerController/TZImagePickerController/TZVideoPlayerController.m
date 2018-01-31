@@ -96,16 +96,17 @@
 
 - (void)configBottomToolBar {
     _toolBar = [[UIView alloc] initWithFrame:CGRectZero];
+    TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
     CGFloat rgb = 34 / 255.0;
-    _toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
+    _toolBar.backgroundColor = tzImagePickerVc.useTBStyle ? [UIColor whiteColor] : [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
+    _doneButton.titleLabel.font = tzImagePickerVc.useTBStyle ? [UIFont fontWithName:@"Rubik-Medium" size:14.0f] : [UIFont systemFontOfSize:16];
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
     if (tzImagePickerVc) {
         [_doneButton setTitle:tzImagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
         [_doneButton setTitleColor:tzImagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+        
     } else {
         [_doneButton setTitle:[NSBundle tz_localizedStringForKey:@"Done"] forState:UIControlStateNormal];
         [_doneButton setTitleColor:[UIColor colorWithRed:(83/255.0) green:(179/255.0) blue:(17/255.0) alpha:1.0] forState:UIControlStateNormal];
@@ -121,7 +122,7 @@
     
     _playerLayer.frame = self.view.bounds;
     _playButton.frame = CGRectMake(0, 64, self.view.tz_width, self.view.tz_height - 64 - 44);
-    _doneButton.frame = CGRectMake(self.view.tz_width - 44 - 12, 0, 44, 44);
+    _doneButton.frame = CGRectMake(self.view.tz_width - 64 - 12, 0, 64, 44);
     _toolBar.frame = CGRectMake(0, self.view.tz_height - 44, self.view.tz_width, 44);
 }
 
